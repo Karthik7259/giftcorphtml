@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GiftFlow — Operations & Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a18;font-size:14px}
+:root{
+  --bg:#ffffff;--bg2:#f5f5f0;--bg3:#eeede8;
+  --border:#e0dfd8;--border2:#cccbc4;
+  --text:#1a1a18;--text2:#6b6a64;--text3:#9c9a92;
+  --wa:#25D366;--wa-dark:#128C7E;
+  --radius:8px;--radius-lg:12px;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#1e1e1c;--bg2:#161614;--bg3:#252523;--border:#3a3a36;--border2:#4a4a46;--text:#e8e6de;--text2:#9c9a92;--text3:#6b6a64;}
+}
+.app{display:flex;flex-direction:column;min-height:100vh}
+.header{background:var(--bg);border-bottom:1px solid var(--border);padding:13px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:10}
+.header-title{font-size:16px;font-weight:600;color:var(--text)}
+.header-sub{font-size:11px;color:var(--text2);margin-top:1px}
+.badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;letter-spacing:0.05em}
+.badge-admin{background:#EEEDFE;color:#3C3489}
+.badge-wa{background:#dcfce7;color:#166534;display:flex;align-items:center;gap:4px}
+.nav{display:flex;background:var(--bg);border-bottom:1px solid var(--border);padding:0 20px;overflow-x:auto;gap:0}
+.nav-tab{font-size:13px;padding:11px 16px;cursor:pointer;color:var(--text2);border:none;border-bottom:2px solid transparent;background:none;font-family:inherit;white-space:nowrap;transition:color 0.15s}
+.nav-tab:hover{color:var(--text)}
+.nav-tab.active{color:var(--text);border-bottom-color:var(--text);font-weight:500}
+.content{padding:18px 20px;display:flex;flex-direction:column;gap:16px;max-width:1400px;width:100%}
+.btn{font-size:12px;padding:6px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;font-family:inherit;transition:background 0.12s;white-space:nowrap}
+.btn:hover{background:var(--bg3)}
+.btn-primary{background:var(--text);color:var(--bg);border-color:var(--text)}
+.btn-primary:hover{opacity:0.87}
+.btn-sm{font-size:11px;padding:4px 10px}
+.btn-danger{border-color:#E24B4A;color:#A32D2D}
+.btn-danger:hover{background:#FCEBEB}
+.btn-wa{background:#25D366;color:#fff;border-color:#25D366;display:inline-flex;align-items:center;gap:5px}
+.btn-wa:hover{background:#20ba59;color:#fff}
+.btn-wa svg{width:14px;height:14px;flex-shrink:0}
+.btn-done{background:#EAF3DE;color:#27500A;border-color:#C0DD97;display:inline-flex;align-items:center;gap:5px;font-weight:500}
+.btn-done:hover{background:#C0DD97}
+.btn-done.completed{background:#27500A;color:#EAF3DE;border-color:#27500A}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.card-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.card-title{font-size:13px;font-weight:500;color:var(--text)}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media(max-width:600px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.mc{background:var(--bg3);border-radius:var(--radius);padding:13px 15px}
+.mc-label{font-size:11px;color:var(--text2);margin-bottom:4px}
+.mc-val{font-size:22px;font-weight:600;color:var(--text)}
+.mc-sub{font-size:11px;margin-top:3px;color:var(--text2)}
+.mc-green{color:#3B6D11}.mc-red{color:#A32D2D}.mc-amber{color:#854F0B}
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.tbl th{padding:9px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text2);letter-spacing:0.04em;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg3);white-space:nowrap}
+.tbl td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg3)}
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:500}
+.pill-green{background:#EAF3DE;color:#27500A}
+.pill-red{background:#FCEBEB;color:#791F1F}
+.pill-amber{background:#FAEEDA;color:#633806}
+.pill-blue{background:#E6F1FB;color:#0C447C}
+.pill-gray{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+.pill-purple{background:#EEEDFE;color:#3C3489}
+.pill-done{background:#27500A;color:#EAF3DE}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.dot-high{background:#E24B4A}.dot-medium{background:#EF9F27}.dot-low{background:#639922}
+.form-label{font-size:11px;color:var(--text2);margin-bottom:4px;display:block;font-weight:500}
+.form-input{width:100%;font-size:13px;padding:7px 10px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:inherit}
+.form-input:focus{outline:none;border-color:var(--text2)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:480px){.form-row,.form-row3{grid-template-columns:1fr}}
+.pipeline{display:grid;grid-template-columns:repeat(7,minmax(140px,1fr));gap:8px;overflow-x:auto;padding-bottom:4px}
+.stage-col{background:var(--bg3);border-radius:var(--radius-lg);padding:10px 8px;min-width:140px}
+.stage-label{font-size:10px;font-weight:600;color:var(--text2);letter-spacing:0.05em;text-transform:uppercase}
+.order-card{border-radius:var(--radius);padding:9px;margin-top:6px;cursor:pointer;border:1px solid transparent;transition:opacity 0.12s;position:relative}
+.order-card:hover{opacity:0.78}
+.order-card-id{font-size:11px;font-weight:600;margin-bottom:2px}
+.order-card-client{font-size:11px;opacity:0.75;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.order-card-meta{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.assignee-chip{font-size:10px;padding:1px 6px;border-radius:8px;background:rgba(255,255,255,0.3)}
+.done-ribbon{position:absolute;top:0;right:0;background:#27500A;color:#EAF3DE;font-size:9px;font-weight:700;padding:2px 6px;border-radius:0 var(--radius) 0 6px;letter-spacing:0.03em}
+.overdue-ribbon{position:absolute;top:0;right:0;background:#A32D2D;color:#FCEBEB;font-size:9px;font-weight:700;padding:2px 6px;border-radius:0 var(--radius) 0 6px;letter-spacing:0.03em}
+.logo-zone{border:1.5px dashed var(--border2);border-radius:var(--radius);padding:16px;text-align:center;cursor:pointer;transition:background 0.12s;position:relative}
+.logo-zone:hover{background:var(--bg3)}
+.logo-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.img-grid{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.img-wrap{position:relative;width:70px;height:70px}
+.img-wrap img{width:70px;height:70px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border)}
+.img-del{position:absolute;top:-5px;right:-5px;width:17px;height:17px;border-radius:50%;background:var(--text);color:var(--bg);border:none;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;line-height:1}
+.img-placeholder{width:36px;height:36px;border-radius:var(--radius);background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center}
+.bar-track{flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width 0.3s}
+.bar-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);margin-bottom:9px}
+.bar-label{width:90px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-val{width:55px;text-align:right;font-weight:500;color:var(--text)}
+.profit-bar{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;margin-top:4px}
+.profit-fill{height:100%;border-radius:4px}
+.pnl-preview{background:var(--bg3);border-radius:var(--radius);padding:12px}
+.pnl-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.pnl-item-label{font-size:11px;color:var(--text2);margin-bottom:3px}
+.pnl-item-val{font-size:17px;font-weight:600}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:200;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
+.modal{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);width:520px;max-width:100%;overflow:hidden}
+.modal-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:14px;font-weight:600}
+.modal-body{padding:18px;display:flex;flex-direction:column;gap:13px;max-height:65vh;overflow-y:auto}
+.modal-footer{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+.close-x{background:none;border:none;cursor:pointer;font-size:17px;color:var(--text2);padding:0 4px;line-height:1}
+.panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.2);z-index:100}
+.panel{position:fixed;top:0;right:0;width:390px;max-width:100vw;height:100vh;background:var(--bg);border-left:1px solid var(--border);overflow-y:auto;z-index:101;display:flex;flex-direction:column}
+.panel-header{padding:15px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:10px;position:sticky;top:0;background:var(--bg);z-index:1}
+.panel-body{padding:16px 18px;display:flex;flex-direction:column;gap:16px;flex:1}
+.section-label{font-size:10px;font-weight:600;color:var(--text2);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px}
+.kv{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px}
+.kv:last-child{border-bottom:none}
+.kv-key{color:var(--text2)}.kv-val{font-weight:500;color:var(--text);text-align:right;max-width:60%}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+.tl-item{display:flex;gap:10px;padding-bottom:12px}
+.tl-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.tl-line{width:1px;background:var(--border);flex:1;margin:4px auto 0}
+.tl-action{font-size:12px;font-weight:500;color:var(--text)}
+.tl-meta{font-size:11px;color:var(--text2);margin-top:1px}
+.search-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.search-input{flex:1;min-width:160px;font-size:13px;padding:7px 11px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:inherit}
+.price-edit{display:flex;align-items:center;gap:4px}
+.price-edit input{width:72px;font-size:12px;padding:4px 7px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:inherit}
+.empty{text-align:center;padding:32px;color:var(--text2);font-size:13px}
+.wa-section{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.wa-section-dark{background:#052e16;border-color:#166534}
+@media(prefers-color-scheme:dark){.wa-section{background:#052e16;border-color:#166534}}
+.wa-msg-preview{background:#fff;border-radius:8px 8px 8px 2px;padding:10px 12px;font-size:12px;line-height:1.6;color:#1a1a18;box-shadow:0 1px 2px rgba(0,0,0,0.1);max-width:280px;border:1px solid #e0dfd8;white-space:pre-line}
+.overdue-banner{background:#FAEEDA;border:1px solid #FAC775;border-radius:var(--radius);padding:10px 14px;font-size:12px;color:#633806;display:flex;align-items:center;gap:8px}
+.settings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.settings-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px}
+.settings-card-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.emp-phone-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.emp-phone-row:last-child{border-bottom:none}
+.emp-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.phone-input{flex:1;font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:inherit}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="header">
+    <div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="header-title">GiftFlow</span>
+        <span class="badge badge-admin">Admin</span>
+        <span class="badge badge-wa" id="wa-status-badge">
+          <svg viewBox="0 0 24 24" width="10" height="10" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L.057 23.944l6.244-1.638A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.894a9.879 9.879 0 0 1-5.031-1.375l-.361-.214-3.741.981.999-3.648-.235-.374A9.859 9.859 0 0 1 2.106 12C2.106 6.533 6.533 2.106 12 2.106S21.894 6.533 21.894 12 17.467 21.894 12 21.894z"/></svg>
+          WhatsApp ready
+        </span>
+      </div>
+      <div class="header-sub">Corporate gifting — supply chain, admin &amp; WhatsApp notifications</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-sm" onclick="openSettings()">⚙ Settings</button>
+      <button class="btn btn-sm" onclick="openOrderModal()">+ New order</button>
+      <button class="btn btn-sm btn-primary" onclick="openProductModal()">+ Add product</button>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="nav-tab active" onclick="switchTab('pipeline',this)">Pipeline</button>
+    <button class="nav-tab" onclick="switchTab('orders',this)">Orders &amp; logos</button>
+    <button class="nav-tab" onclick="switchTab('products',this)">Product pricing</button>
+    <button class="nav-tab" onclick="switchTab('margins',this)">Margin analysis</button>
+    <button class="nav-tab" onclick="switchTab('employees',this)">Team</button>
+  </div>
+
+  <div id="tab-pipeline" class="content"></div>
+  <div id="tab-orders" class="content" style="display:none"></div>
+  <div id="tab-products" class="content" style="display:none"></div>
+  <div id="tab-margins" class="content" style="display:none"></div>
+  <div id="tab-employees" class="content" style="display:none"></div>
+</div>
+
+<div class="panel-overlay" id="panel-overlay" onclick="closePanel()" style="display:none"></div>
+<div class="panel" id="detail-panel" style="display:none"></div>
+<div id="modal-root"></div>
+
+<script>
+// ── WhatsApp icon SVG ────────────────────────────────────────
+const WA_ICON=`<svg viewBox="0 0 24 24" fill="white" width="13" height="13"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L.057 23.944l6.244-1.638A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.894a9.879 9.879 0 0 1-5.031-1.375l-.361-.214-3.741.981.999-3.648-.235-.374A9.859 9.859 0 0 1 2.106 12C2.106 6.533 6.533 2.106 12 2.106S21.894 6.533 21.894 12 17.467 21.894 12 21.894z"/></svg>`;
+
+// ── Stage config ──────────────────────────────────────────────
+const STAGES=[
+  {id:'received',label:'Order received',cc:'pill-purple',bg:'#EEEDFE',tc:'#3C3489',dot:'#534AB7',next:'placed'},
+  {id:'placed',label:'Order placed',cc:'pill-blue',bg:'#E6F1FB',tc:'#0C447C',dot:'#185FA5',next:'collected'},
+  {id:'collected',label:'Collected from vendor',cc:'pill-amber',bg:'#FAEEDA',tc:'#633806',dot:'#BA7517',next:'branding'},
+  {id:'branding',label:'At branding',cc:'pill-gray',bg:'#f1efe8',tc:'#5F5E5A',dot:'#0F6E56',next:'branding_done'},
+  {id:'branding_done',label:'Branding done',cc:'pill-gray',bg:'#FBEAF0',tc:'#72243E',dot:'#993556',next:'client'},
+  {id:'client',label:'Sent to client',cc:'pill-green',bg:'#EAF3DE',tc:'#27500A',dot:'#3B6D11',next:null},
+  {id:'store',label:'Sent to store',cc:'pill-gray',bg:'#FAECE7',tc:'#712B13',dot:'#993C1D',next:null},
+];
+const SL={}; STAGES.forEach(s=>SL[s.id]=s.label);
+
+// Stage-specific task verbs for WhatsApp messages
+const STAGE_TASK={
+  received:'Review and confirm the order details',
+  placed:'Place order with vendor and confirm delivery date',
+  collected:'Collect items from vendor and check quality',
+  branding:'Apply branding / logo as per instructions',
+  branding_done:'Pack branded items and prepare for dispatch',
+  client:'Dispatch and deliver to client',
+  store:'Transfer stock to store inventory',
+};
+
+// ── Employees (phone numbers editable in Settings) ────────────
+let EMPLOYEES=[
+  {id:'e1',name:'Priya Sharma',role:'Procurement',in:'PS',bg:'#EEEDFE',col:'#3C3489',phone:'919876543210'},
+  {id:'e2',name:'Rahul Mehta',role:'Vendor Relations',in:'RM',bg:'#E1F5EE',col:'#085041',phone:'919876543211'},
+  {id:'e3',name:'Divya Nair',role:'Branding Lead',in:'DN',bg:'#FAEEDA',col:'#633806',phone:'919876543212'},
+  {id:'e4',name:'Arjun Kapoor',role:'Logistics',in:'AK',bg:'#FAECE7',col:'#712B13',phone:'919876543213'},
+  {id:'e5',name:'Sonia Reddy',role:'Sales',in:'SR',bg:'#E6F1FB',col:'#0C447C',phone:'919876543214'},
+  {id:'e6',name:'Karthik Menon',role:'Store Manager',in:'KM',bg:'#EAF3DE',col:'#27500A',phone:'919876543215'},
+];
+
+// Admin phone (receives completion + overdue alerts)
+let ADMIN_PHONE='919999999999';
+let APP_URL='https://your-giftflow-url.netlify.app';
+
+let products=[
+  {id:'p1',name:'Notebook A5',cat:'Stationery',cost:85,brand:35,sell:220,minQty:50},
+  {id:'p2',name:'Ceramic mug',cat:'Drinkware',cost:120,brand:45,sell:280,minQty:30},
+  {id:'p3',name:'Tote bag',cat:'Bags',cost:95,brand:55,sell:250,minQty:100},
+  {id:'p4',name:'Metal pen',cat:'Stationery',cost:40,brand:20,sell:110,minQty:200},
+  {id:'p5',name:'Stainless bottle',cat:'Drinkware',cost:280,brand:80,sell:650,minQty:25},
+  {id:'p6',name:'Cap',cat:'Apparel',cost:150,brand:70,sell:380,minQty:50},
+  {id:'p7',name:'Backpack',cat:'Bags',cost:850,brand:150,sell:2100,minQty:10},
+  {id:'p8',name:'Polo T-shirt',cat:'Apparel',cost:320,brand:90,sell:750,minQty:25},
+];
+
+let orders=[
+  {id:'ORD-001',client:'Infosys Ltd',pid:'p1',qty:200,stage:'received',pri:'high',emp:'e1',due:'2026-03-20',notes:'Branded cover required',date:'Mar 10',imgs:[],disc:0,extra:2000,done:false,hist:[{dot:'#534AB7',act:'Order received',who:'Priya Sharma',d:'Mar 10'}]},
+  {id:'ORD-002',client:'TCS Mumbai',pid:'p2',qty:150,stage:'placed',pri:'medium',emp:'e2',due:'2026-03-22',notes:'Plain white finish',date:'Mar 9',imgs:[],disc:5,extra:0,done:false,hist:[{dot:'#534AB7',act:'Order received',who:'Priya Sharma',d:'Mar 9'},{dot:'#185FA5',act:'Placed with vendor',who:'Rahul Mehta',d:'Mar 10'}]},
+  {id:'ORD-003',client:'Wipro Pune',pid:'p4',qty:300,stage:'collected',pri:'low',emp:'e2',due:'2026-03-25',notes:'',date:'Mar 8',imgs:[],disc:0,extra:500,done:false,hist:[{dot:'#534AB7',act:'Order received',who:'Priya Sharma',d:'Mar 8'},{dot:'#185FA5',act:'Placed',who:'Rahul Mehta',d:'Mar 9'},{dot:'#BA7517',act:'Collected from vendor',who:'Rahul Mehta',d:'Mar 12'}]},
+  {id:'ORD-004',client:'HDFC Bank',pid:'p1',qty:100,stage:'branding',pri:'high',emp:'e3',due:'2026-03-18',notes:'Gold foil logo',date:'Mar 7',imgs:[],disc:8,extra:3500,done:false,hist:[{dot:'#534AB7',act:'Order received',who:'Priya Sharma',d:'Mar 7'},{dot:'#0F6E56',act:'Sent to branding',who:'Divya Nair',d:'Mar 10'}]},
+  {id:'ORD-005',client:'Flipkart',pid:'p3',qty:500,stage:'branding',pri:'medium',emp:'e3',due:'2026-03-21',notes:'Pantone 285 C',date:'Mar 6',imgs:[],disc:10,extra:8000,done:false,hist:[{dot:'#534AB7',act:'Order received',who:'Priya Sharma',d:'Mar 6'},{dot:'#0F6E56',act:'Sent to branding',who:'Divya Nair',d:'Mar 9'}]},
+  {id:'ORD-006',client:'Amazon IN',pid:'p8',qty:80,stage:'branding_done',pri:'high',emp:'e4',due:'2026-03-17',notes:'Deliver to Whitefield office',date:'Mar 5',imgs:[],disc:0,extra:4000,done:false,hist:[{dot:'#534AB7',act:'Order received',who:'Priya Sharma',d:'Mar 5'},{dot:'#993556',act:'Branding complete',who:'Divya Nair',d:'Mar 11'}]},
+  {id:'ORD-007',client:'Meesho',pid:'p5',qty:60,stage:'client',pri:'medium',emp:'e5',due:'2026-03-16',notes:'',date:'Mar 4',imgs:[],disc:5,extra:0,done:true,hist:[{dot:'#534AB7',act:'Order received',who:'Priya Sharma',d:'Mar 4'},{dot:'#3B6D11',act:'Sent to client',who:'Sonia Reddy',d:'Mar 13'},{dot:'#27500A',act:'Task marked complete',who:'Sonia Reddy',d:'Mar 13'}]},
+  {id:'ORD-008',client:'Zepto',pid:'p6',qty:120,stage:'store',pri:'low',emp:'e6',due:'2026-03-28',notes:'Store stock Q2',date:'Mar 3',imgs:[],disc:0,extra:0,done:false,hist:[{dot:'#534AB7',act:'Order received',who:'Priya Sharma',d:'Mar 3'},{dot:'#993C1D',act:'Sent to store',who:'Karthik Menon',d:'Mar 12'}]},
+  {id:'ORD-009',client:'Swiggy',pid:'p3',qty:250,stage:'received',pri:'medium',emp:'e1',due:'2026-03-30',notes:'',date:'Mar 11',imgs:[],disc:0,extra:1500,done:false,hist:[{dot:'#534AB7',act:'Order received',who:'Priya Sharma',d:'Mar 11'}]},
+  {id:'ORD-010',client:'Ola Electric',pid:'p7',qty:40,stage:'placed',pri:'high',emp:'e2',due:'2026-03-19',notes:'Waterproof branding',date:'Mar 10',imgs:[],disc:12,extra:6000,done:false,hist:[{dot:'#534AB7',act:'Order received',who:'Priya Sharma',d:'Mar 10'},{dot:'#185FA5',act:'Placed with vendor',who:'Rahul Mehta',d:'Mar 11'}]},
+];
+
+// ── Helpers ───────────────────────────────────────────────────
+function gp(id){return products.find(p=>p.id===id)||{name:'—',cost:0,brand:0,sell:0}}
+function ge(id){return EMPLOYEES.find(e=>e.id===id)||{name:'Unassigned',in:'?',bg:'#eee',col:'#999',phone:''}}
+function gs(id){return STAGES.find(s=>s.id===id)||{label:id,cc:'pill-gray',bg:'#eee',tc:'#555',dot:'#888',next:null}}
+function calc(o){
+  const p=gp(o.pid);
+  const rev=o.qty*p.sell*(1-(o.disc||0)/100);
+  const cogs=o.qty*(p.cost+p.brand)+(o.extra||0);
+  const profit=rev-cogs;
+  const margin=rev>0?profit/rev*100:0;
+  return{rev,cogs,profit,margin};
+}
+function fmt(n){return Math.round(n).toLocaleString('en-IN')}
+function fmtL(n){return (n/100000).toFixed(2)+'L'}
+function mc(m){return m>=30?'#3B6D11':m>=15?'#854F0B':'#A32D2D'}
+function mpill(m){return m>=30?'pill-green':m>=15?'pill-amber':'pill-red'}
+function spill(s){const m={received:'pill-purple',placed:'pill-blue',collected:'pill-amber',branding:'pill-gray',branding_done:'pill-gray',client:'pill-green',store:'pill-gray'};return m[s]||'pill-gray'}
+function nowStr(){const t=new Date();const ms=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return ms[t.getMonth()]+' '+t.getDate();}
+function nextId(){return 'ORD-'+String(orders.length+1).padStart(3,'0')}
+function isOverdue(o){
+  if(!o.due||o.done)return false;
+  if(['client','store'].includes(o.stage))return false;
+  const today=new Date();today.setHours(0,0,0,0);
+  const due=new Date(o.due);due.setHours(0,0,0,0);
+  return due<today;
+}
+
+// ── WhatsApp message builder ──────────────────────────────────
+function buildWAMessage(o,type){
+  const p=gp(o.pid);const emp=ge(o.emp);const s=gs(o.stage);
+  const task=STAGE_TASK[o.stage]||'Complete your assigned task';
+  if(type==='assign'){
+    return `Hello ${emp.name.split(' ')[0]} 👋
+
+*New task assigned — ${o.id}*
+Client: ${o.client}
+Items: ${p.name} × ${o.qty}
+Stage: ${s.label}
+Task: ${task}
+Due: ${o.due}
+${o.notes?'Notes: '+o.notes:''}
+
+Reply *DONE* when complete or open GiftFlow: ${APP_URL}`;
+  }
+  if(type==='complete'){
+    return `✅ *Task completed — ${o.id}*
+Client: ${o.client}
+Completed by: ${emp.name}
+Stage: ${s.label}
+Time: ${nowStr()}
+
+Order is ready to move to next stage.`;
+  }
+  if(type==='overdue'){
+    return `⚠️ *Overdue alert — ${o.id}*
+Client: ${o.client}
+Items: ${p.name} × ${o.qty}
+Stage: ${s.label}
+Due: ${o.due}
+Assigned: ${emp.name}
+
+Please update status immediately.`;
+  }
+  return '';
+}
+
+function waLink(phone,msg){
+  const clean=phone.replace(/\D/g,'');
+  return `https://wa.me/${clean}?text=${encodeURIComponent(msg)}`;
+}
+
+function sendWA(phone,msg){
+  window.open(waLink(phone,msg),'_blank');
+}
+
+// ── Tab switching ─────────────────────────────────────────────
+let curTab='pipeline';
+function switchTab(tab,el){
+  curTab=tab;
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['pipeline','orders','products','margins','employees'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display=t===tab?'flex':'none';
+  });
+  render(tab);
+}
+function render(tab){
+  if(tab==='pipeline')renderPipeline();
+  else if(tab==='orders')renderOrders();
+  else if(tab==='products')renderProducts();
+  else if(tab==='margins')renderMargins();
+  else if(tab==='employees')renderEmployees();
+}
+
+// ── Pipeline ──────────────────────────────────────────────────
+function renderPipeline(){
+  const totalRev=orders.reduce((s,o)=>s+calc(o).rev,0);
+  const totalProf=orders.reduce((s,o)=>s+calc(o).profit,0);
+  const avgM=totalRev>0?totalProf/totalRev*100:0;
+  const active=orders.filter(o=>!['client','store'].includes(o.stage)).length;
+  const overdueOrders=orders.filter(isOverdue);
+  const el=document.getElementById('tab-pipeline');
+
+  el.innerHTML=`
+    ${overdueOrders.length?`<div class="overdue-banner">
+      ⚠️ <strong>${overdueOrders.length} overdue order${overdueOrders.length>1?'s':''}</strong> — ${overdueOrders.map(o=>o.id).join(', ')}
+      <button class="btn btn-sm" style="margin-left:auto;background:#854F0B;color:#fff;border-color:#854F0B" onclick="sendOverdueAlerts()">Send WhatsApp alerts</button>
+    </div>`:''}
+    <div class="metrics">
+      <div class="mc"><div class="mc-label">Total pipeline value</div><div class="mc-val">₹${fmtL(totalRev)}</div><div class="mc-sub mc-green">${orders.length} orders</div></div>
+      <div class="mc"><div class="mc-label">Gross profit</div><div class="mc-val">₹${fmtL(totalProf)}</div><div class="mc-sub" style="color:${mc(avgM)}">${avgM.toFixed(1)}% margin</div></div>
+      <div class="mc"><div class="mc-label">Active</div><div class="mc-val">${active}</div><div class="mc-sub mc-amber">In pipeline</div></div>
+      <div class="mc"><div class="mc-label">Completed</div><div class="mc-val mc-green">${orders.filter(o=>o.done).length}</div><div class="mc-sub mc-green">Marked done</div></div>
+    </div>
+    <div class="pipeline" id="pipeline-board"></div>
+  `;
+
+  const board=document.getElementById('pipeline-board');
+  STAGES.forEach(stage=>{
+    const stageOrders=orders.filter(o=>o.stage===stage.id);
+    const col=document.createElement('div');
+    col.className='stage-col';
+    col.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <span class="stage-label" style="font-size:9px">${stage.label}</span>
+      <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:${stage.bg};color:${stage.tc}">${stageOrders.length}</span>
+    </div>`;
+    stageOrders.forEach(o=>{
+      const emp=ge(o.emp);
+      const over=isOverdue(o);
+      const card=document.createElement('div');
+      card.className='order-card';
+      card.style.background=stage.bg;card.style.color=stage.tc;card.style.borderColor=stage.bg;
+      card.innerHTML=`
+        ${o.done?`<div class="done-ribbon">DONE</div>`:(over?`<div class="overdue-ribbon">LATE</div>`:'')}
+        <div class="order-card-id">${o.id}</div>
+        <div class="order-card-client">${o.client}</div>
+        <div style="font-size:10px;opacity:0.7;margin-bottom:5px">${gp(o.pid).name} ×${o.qty}</div>
+        <div class="order-card-meta">
+          <span class="assignee-chip">${emp.in}</span>
+          <span class="dot dot-${o.pri}"></span>
+        </div>
+        ${o.imgs&&o.imgs.length?`<div style="margin-top:5px;display:flex;gap:2px">${o.imgs.slice(0,3).map(s=>`<img src="${s}" style="width:20px;height:20px;border-radius:3px;object-fit:cover;border:1px solid rgba(0,0,0,0.1)">`).join('')}</div>`:''}
+      `;
+      card.onclick=()=>openPanel(o.id);
+      col.appendChild(card);
+    });
+    board.appendChild(col);
+  });
+}
+
+function sendOverdueAlerts(){
+  const overdueOrders=orders.filter(isOverdue);
+  if(!overdueOrders.length)return;
+  overdueOrders.forEach(o=>{
+    const emp=ge(o.emp);
+    if(emp.phone){
+      const msg=buildWAMessage(o,'overdue');
+      sendWA(emp.phone,msg);
+    }
+  });
+}
+
+// ── Orders & Logos tab ────────────────────────────────────────
+function renderOrders(){
+  const el=document.getElementById('tab-orders');
+  el.innerHTML=`
+    <div class="search-row">
+      <input class="search-input" placeholder="Search client or order ID..." oninput="filterOrderTable(this.value)" id="o-search">
+      <select class="form-input" style="width:170px" onchange="filterOrderTable(document.getElementById('o-search').value,this.value)" id="o-stage-filter">
+        <option value="">All stages</option>
+        ${STAGES.map(s=>`<option value="${s.id}">${s.label}</option>`).join('')}
+      </select>
+      <button class="btn btn-sm btn-primary" onclick="openOrderModal()">+ New order</button>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">All orders — click to edit, upload logos &amp; notify</span></div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr>
+            <th style="width:80px">Order</th>
+            <th style="width:125px">Client</th>
+            <th style="width:100px">Product</th>
+            <th style="width:42px">Qty</th>
+            <th style="width:85px">Revenue</th>
+            <th style="width:65px">Margin</th>
+            <th style="width:95px">Stage</th>
+            <th style="width:65px">Status</th>
+            <th style="width:65px">Logos</th>
+            <th style="width:120px">Actions</th>
+          </tr></thead>
+          <tbody id="orders-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  populateOrderTable(orders);
+}
+
+function populateOrderTable(list){
+  const tb=document.getElementById('orders-tbody');
+  if(!tb)return;
+  if(!list.length){tb.innerHTML=`<tr><td colspan="10" class="empty">No orders found</td></tr>`;return;}
+  tb.innerHTML=list.map(o=>{
+    const c=calc(o);const p=gp(o.pid);const s=gs(o.stage);
+    const over=isOverdue(o);
+    const hasImg=o.imgs&&o.imgs.length>0;
+    const emp=ge(o.emp);
+    return`<tr style="cursor:pointer;${over?'background:#fff8f0':''}" onclick="openPanel('${o.id}')">
+      <td style="font-weight:600;font-size:12px">${o.id}</td>
+      <td style="font-size:12px">${o.client}</td>
+      <td style="font-size:12px">${p.name}</td>
+      <td style="font-size:12px">${o.qty}</td>
+      <td style="font-size:12px">₹${fmt(c.rev)}</td>
+      <td><span class="pill ${mpill(c.margin)}">${Math.round(c.margin)}%</span></td>
+      <td><span class="pill ${s.cc}" style="font-size:10px">${s.label.split(' ').slice(-1)[0]}</span>${over?` <span style="color:#A32D2D;font-size:10px;font-weight:600">LATE</span>`:''}</td>
+      <td>${o.done?`<span class="pill pill-done" style="font-size:10px">Done</span>`:`<span class="pill pill-gray" style="font-size:10px">Pending</span>`}</td>
+      <td onclick="event.stopPropagation()">
+        ${hasImg
+          ?`<div style="display:flex;gap:2px">${o.imgs.slice(0,2).map(src=>`<img src="${src}" style="width:28px;height:28px;border-radius:4px;object-fit:cover;border:1px solid var(--border)">`).join('')}${o.imgs.length>2?`<div style="width:28px;height:28px;border-radius:4px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--text2);border:1px solid var(--border)">+${o.imgs.length-2}</div>`:''}</div>`
+          :`<div class="img-placeholder" style="width:28px;height:28px"><svg width="12" height="12" fill="none" stroke="var(--text2)" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`}
+      </td>
+      <td onclick="event.stopPropagation()" style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;padding-top:10px">
+        <button class="btn btn-sm btn-wa" onclick="sendWA('${emp.phone}','${encodeURIComponent(buildWAMessage(o,'assign'))}')" title="Notify ${emp.name.split(' ')[0]} on WhatsApp">${WA_ICON}Notify</button>
+        <button class="btn btn-sm" onclick="openPanel('${o.id}')">Edit</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterOrderTable(q,stage){
+  const sf=stage!==undefined?stage:(document.getElementById('o-stage-filter')?.value||'');
+  let list=orders;
+  if(q)list=list.filter(o=>o.client.toLowerCase().includes(q.toLowerCase())||o.id.toLowerCase().includes(q.toLowerCase()));
+  if(sf)list=list.filter(o=>o.stage===sf);
+  populateOrderTable(list);
+}
+
+// ── Detail Panel ──────────────────────────────────────────────
+function openPanel(id){
+  const o=orders.find(x=>x.id===id);if(!o)return;
+  const p=gp(o.pid);const s=gs(o.stage);const emp=ge(o.emp);
+  const empOpts=EMPLOYEES.map(e=>`<option value="${e.id}"${e.id===o.emp?' selected':''}>${e.name}</option>`).join('');
+  const stageOpts=STAGES.map(st=>`<option value="${st.id}"${st.id===o.stage?' selected':''}>${st.label}</option>`).join('');
+  const prodOpts=products.map(pr=>`<option value="${pr.id}"${pr.id===o.pid?' selected':''}>${pr.name}</option>`).join('');
+  const waMsg=buildWAMessage(o,'assign');
+  const waMsgComplete=buildWAMessage(o,'complete');
+  const histHTML=(o.hist||[]).map((h,i)=>`
+    <div class="tl-item">
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <div class="tl-dot" style="background:${h.dot}"></div>
+        ${i<(o.hist.length-1)?`<div class="tl-line" style="min-height:16px"></div>`:''}
+      </div>
+      <div><div class="tl-action">${h.act}</div><div class="tl-meta">${h.who} · ${h.d}</div></div>
+    </div>`).join('');
+  const over=isOverdue(o);
+
+  document.getElementById('detail-panel').innerHTML=`
+    <div class="panel-header">
+      <div>
+        <div style="font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px">
+          ${o.id} — ${o.client}
+          ${o.done?`<span class="pill pill-done" style="font-size:10px">Done</span>`:''}
+          ${over?`<span class="pill pill-red" style="font-size:10px">Overdue</span>`:''}
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px">${p.name} × ${o.qty} · Assigned: ${emp.name}</div>
+      </div>
+      <button class="close-x" onclick="closePanel()">&#x2715;</button>
+    </div>
+    <div class="panel-body">
+
+      <div>
+        <div class="section-label">Order details</div>
+        <div class="kv"><span class="kv-key">Client</span><input style="width:160px;font-size:12px;padding:3px 7px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:inherit" id="pd-client" value="${o.client}"></div>
+        <div class="kv"><span class="kv-key">Product</span><select style="font-size:12px;padding:3px 7px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:inherit" id="pd-product" onchange="panelRecalc('${id}')">${prodOpts}</select></div>
+        <div class="kv"><span class="kv-key">Quantity</span><input type="number" style="width:80px;font-size:12px;padding:3px 7px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:inherit" id="pd-qty" value="${o.qty}" oninput="panelRecalc('${id}')"></div>
+        <div class="kv"><span class="kv-key">Discount %</span><input type="number" style="width:70px;font-size:12px;padding:3px 7px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:inherit" id="pd-disc" value="${o.disc||0}" oninput="panelRecalc('${id}')"></div>
+        <div class="kv"><span class="kv-key">Extra costs ₹</span><input type="number" style="width:90px;font-size:12px;padding:3px 7px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:inherit" id="pd-extra" value="${o.extra||0}" oninput="panelRecalc('${id}')"></div>
+        <div class="kv"><span class="kv-key">Due date</span><input type="date" style="font-size:12px;padding:3px 7px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:inherit" id="pd-due" value="${o.due}"></div>
+        <div class="kv"><span class="kv-key">Notes</span><input style="width:160px;font-size:12px;padding:3px 7px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-family:inherit" id="pd-notes" value="${o.notes||''}"></div>
+      </div>
+
+      <div>
+        <div class="section-label">Stage &amp; assignment</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div><label class="form-label">Stage</label><select class="form-input" id="pd-stage">${stageOpts}</select></div>
+          <div><label class="form-label">Assigned to</label><select class="form-input" id="pd-emp" onchange="panelUpdateEmpWA('${id}')">${empOpts}</select></div>
+        </div>
+      </div>
+
+      <div class="wa-section">
+        <div style="font-size:11px;font-weight:600;color:#166534;display:flex;align-items:center;gap:5px;margin-bottom:2px">
+          ${WA_ICON.replace('white','#166534')} WhatsApp notifications
+        </div>
+        <div class="wa-msg-preview" id="panel-wa-preview">${waMsg.replace(/\n/g,'<br>').replace(/\*(.*?)\*/g,'<strong>$1</strong>')}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+          <button class="btn btn-sm btn-wa" onclick="sendWAFromPanel('${id}','assign')">${WA_ICON} Notify ${emp.name.split(' ')[0]}</button>
+          ${over?`<button class="btn btn-sm" style="background:#854F0B;color:#fff;border-color:#854F0B" onclick="sendWAFromPanel('${id}','overdue')">${WA_ICON} Send overdue alert</button>`:''}
+          <button class="btn btn-sm btn-wa" style="background:var(--bg3);color:#166534;border-color:#bbf7d0" onclick="sendWA('${ADMIN_PHONE}','${encodeURIComponent(waMsgComplete)}')">${WA_ICON} Alert admin</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">Task completion</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div style="font-size:12px;color:var(--text2)">
+            ${o.done?`Marked complete by ${emp.name} · ${(o.hist||[]).filter(h=>h.act.includes('complete')).slice(-1)[0]?.d||nowStr()}`:`Pending — ${emp.name} needs to complete this stage`}
+          </div>
+          <button class="btn btn-done ${o.done?'completed':''}" id="done-btn" onclick="toggleDone('${id}')">
+            ${o.done?`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Completed`:`<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg> Mark done`}
+          </button>
+        </div>
+        ${s.next?`<div style="margin-top:8px"><button class="btn btn-sm btn-primary" onclick="advanceStage('${id}')">Move to next stage: ${SL[s.next]} →</button></div>`:''}
+      </div>
+
+      <div>
+        <div class="section-label">P&amp;L snapshot</div>
+        <div class="pnl-preview" id="panel-pnl"></div>
+      </div>
+
+      <div>
+        <div class="section-label">Logo / branding images</div>
+        <div class="img-grid" id="pd-img-grid"></div>
+        <div class="logo-zone" style="margin-top:8px">
+          <input type="file" accept="image/*" multiple onchange="uploadPanelImg(event,'${id}')">
+          <div style="pointer-events:none">
+            <svg width="20" height="20" fill="none" stroke="var(--text2)" stroke-width="1.5" viewBox="0 0 24 24" style="display:block;margin:0 auto 6px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div style="font-size:12px;color:var(--text2)">Upload logos / branding reference</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">PNG, JPG, SVG · multiple OK</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">Activity log</div>
+        <div>${histHTML||'<div style="font-size:12px;color:var(--text2)">No history</div>'}</div>
+      </div>
+
+      <div style="display:flex;gap:8px;padding-top:4px">
+        <button class="btn" onclick="closePanel()">Cancel</button>
+        <button class="btn btn-primary" style="flex:1" onclick="savePanel('${id}')">Save changes</button>
+      </div>
+    </div>
+  `;
+  renderPanelImgs(id);
+  panelRecalc(id);
+  document.getElementById('panel-overlay').style.display='block';
+  document.getElementById('detail-panel').style.display='flex';
+}
+
+function sendWAFromPanel(id,type){
+  const empId=document.getElementById('pd-emp')?.value||orders.find(x=>x.id===id)?.emp;
+  const emp=ge(empId);
+  const o=orders.find(x=>x.id===id);
+  if(!o)return;
+  const tmpO={...o,emp:empId};
+  const msg=buildWAMessage(tmpO,type);
+  const phone=type==='overdue'?emp.phone:(type==='complete'?ADMIN_PHONE:emp.phone);
+  sendWA(phone,msg);
+}
+
+function panelUpdateEmpWA(id){
+  const empId=document.getElementById('pd-emp')?.value;
+  const o=orders.find(x=>x.id===id);
+  if(!o||!empId)return;
+  const tmpO={...o,emp:empId};
+  const msg=buildWAMessage(tmpO,'assign');
+  const prev=document.getElementById('panel-wa-preview');
+  if(prev)prev.innerHTML=msg.replace(/\n/g,'<br>').replace(/\*(.*?)\*/g,'<strong>$1</strong>');
+}
+
+function toggleDone(id){
+  const o=orders.find(x=>x.id===id);if(!o)return;
+  o.done=!o.done;
+  const emp=ge(o.emp);
+  if(!o.hist)o.hist=[];
+  if(o.done){
+    o.hist.push({dot:'#27500A',act:'Task marked complete',who:emp.name,d:nowStr()});
+    // Auto-notify admin via WA
+    sendWA(ADMIN_PHONE,buildWAMessage(o,'complete'));
+  } else {
+    o.hist.push({dot:'#854F0B',act:'Completion mark removed',who:emp.name,d:nowStr()});
+  }
+  closePanel();
+  render(curTab);
+  openPanel(id);
+}
+
+function advanceStage(id){
+  const o=orders.find(x=>x.id===id);if(!o)return;
+  const s=gs(o.stage);
+  if(!s.next)return;
+  o.stage=s.next;
+  const emp=ge(o.emp);
+  if(!o.hist)o.hist=[];
+  o.hist.push({dot:gs(s.next).dot,act:'Moved to: '+SL[s.next],who:emp.name,d:nowStr()});
+  // Notify assigned employee about new stage
+  sendWA(emp.phone,buildWAMessage(o,'assign'));
+  closePanel();
+  render(curTab);
+  openPanel(id);
+}
+
+function panelRecalc(id){
+  const pid=document.getElementById('pd-product')?.value;
+  const qty=parseFloat(document.getElementById('pd-qty')?.value)||0;
+  const disc=parseFloat(document.getElementById('pd-disc')?.value)||0;
+  const extra=parseFloat(document.getElementById('pd-extra')?.value)||0;
+  const p=products.find(x=>x.id===pid)||gp(pid);
+  const rev=qty*p.sell*(1-disc/100);
+  const cogs=qty*(p.cost+p.brand)+extra;
+  const profit=rev-cogs;
+  const margin=rev>0?profit/rev*100:0;
+  const pnl=document.getElementById('panel-pnl');
+  if(!pnl)return;
+  pnl.innerHTML=`<div class="pnl-grid">
+    <div><div class="pnl-item-label">Revenue</div><div class="pnl-item-val" style="color:var(--text)">₹${fmt(rev)}</div></div>
+    <div><div class="pnl-item-label">COGS</div><div class="pnl-item-val" style="color:var(--text2)">₹${fmt(cogs)}</div></div>
+    <div><div class="pnl-item-label">Gross profit</div><div class="pnl-item-val" style="color:${mc(margin)}">₹${fmt(profit)}<br><span style="font-size:12px">${Math.round(margin)}%</span></div></div>
+  </div>`;
+}
+
+function renderPanelImgs(id){
+  const o=orders.find(x=>x.id===id);
+  const grid=document.getElementById('pd-img-grid');
+  if(!grid||!o)return;
+  grid.innerHTML=(o.imgs||[]).map((src,i)=>`
+    <div class="img-wrap"><img src="${src}" alt="logo">
+      <button class="img-del" onclick="removePanelImg('${id}',${i})">&#x2715;</button>
+    </div>`).join('');
+}
+function removePanelImg(id,idx){
+  const o=orders.find(x=>x.id===id);if(!o)return;
+  o.imgs.splice(idx,1);renderPanelImgs(id);
+}
+function uploadPanelImg(evt,id){
+  const o=orders.find(x=>x.id===id);if(!o)return;
+  Array.from(evt.target.files).forEach(file=>{
+    const r=new FileReader();
+    r.onload=e=>{o.imgs.push(e.target.result);renderPanelImgs(id);};
+    r.readAsDataURL(file);
+  });
+  evt.target.value='';
+}
+
+function savePanel(id){
+  const o=orders.find(x=>x.id===id);if(!o)return;
+  const oldStage=o.stage;const oldEmp=o.emp;
+  o.client=document.getElementById('pd-client').value;
+  o.pid=document.getElementById('pd-product').value;
+  o.qty=parseFloat(document.getElementById('pd-qty').value)||0;
+  o.disc=parseFloat(document.getElementById('pd-disc').value)||0;
+  o.extra=parseFloat(document.getElementById('pd-extra').value)||0;
+  o.due=document.getElementById('pd-due').value;
+  o.notes=document.getElementById('pd-notes').value;
+  const newEmp=document.getElementById('pd-emp').value;
+  const newStage=document.getElementById('pd-stage').value;
+  o.emp=newEmp;
+  if(!o.hist)o.hist=[];
+  if(newStage!==oldStage){
+    o.stage=newStage;
+    o.hist.push({dot:gs(newStage).dot,act:'Moved to: '+SL[newStage],who:ge(newEmp).name,d:nowStr()});
+  }
+  if(newEmp!==oldEmp){
+    o.hist.push({dot:'#534AB7',act:'Reassigned to '+ge(newEmp).name,who:'Admin',d:nowStr()});
+    // Notify new employee
+    sendWA(ge(newEmp).phone,buildWAMessage(o,'assign'));
+  }
+  closePanel();render(curTab);
+}
+
+function closePanel(){
+  document.getElementById('panel-overlay').style.display='none';
+  document.getElementById('detail-panel').style.display='none';
+}
+
+// ── Products ──────────────────────────────────────────────────
+function renderProducts(){
+  const cats=[...new Set(products.map(p=>p.cat))];
+  const el=document.getElementById('tab-products');
+  el.innerHTML=`
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">Product pricing master — edit inline</span>
+        <button class="btn btn-sm btn-primary" onclick="openProductModal()">+ Add product</button>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr>
+            <th style="width:150px">Product</th><th style="width:85px">Category</th>
+            <th style="width:110px">Cost ₹</th><th style="width:110px">Branding ₹</th>
+            <th style="width:110px">Sell price ₹</th><th style="width:80px">Margin</th>
+            <th style="width:70px">Min qty</th><th style="width:70px">Remove</th>
+          </tr></thead>
+          <tbody>${products.map(p=>{
+            const tc=p.cost+p.brand;const m=p.sell>0?(p.sell-tc)/p.sell*100:0;
+            return`<tr>
+              <td style="font-weight:500">${p.name}</td>
+              <td><span class="pill pill-gray">${p.cat}</span></td>
+              <td><div class="price-edit"><span style="color:var(--text2);font-size:12px">₹</span><input type="number" value="${p.cost}" onchange="updateProd('${p.id}','cost',this.value)"></div></td>
+              <td><div class="price-edit"><span style="color:var(--text2);font-size:12px">₹</span><input type="number" value="${p.brand}" onchange="updateProd('${p.id}','brand',this.value)"></div></td>
+              <td><div class="price-edit"><span style="color:var(--text2);font-size:12px">₹</span><input type="number" value="${p.sell}" onchange="updateProd('${p.id}','sell',this.value)"></div></td>
+              <td><span class="pill ${mpill(m)}">${Math.round(m)}%</span><div class="profit-bar" style="width:60px;margin-top:3px"><div class="profit-fill" style="width:${Math.min(Math.round(m),100)}%;background:${mc(m)}"></div></div></td>
+              <td style="font-size:12px">${p.minQty}</td>
+              <td><button class="btn btn-sm btn-danger" onclick="delProd('${p.id}')">Remove</button></td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">Category margin summary</span></div>
+      <div style="padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px">
+        ${cats.map(cat=>{
+          const cp=products.filter(p=>p.cat===cat);
+          const avg=cp.reduce((s,p)=>{const m=p.sell>0?(p.sell-p.cost-p.brand)/p.sell*100:0;return s+m;},0)/cp.length;
+          return`<div style="background:var(--bg3);border-radius:var(--radius);padding:12px">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:4px">${cat}</div>
+            <div style="font-size:20px;font-weight:600;color:${mc(avg)}">${Math.round(avg)}%</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px">${cp.length} product${cp.length>1?'s':''}</div>
+            <div class="profit-bar" style="margin-top:6px"><div class="profit-fill" style="width:${Math.min(Math.round(avg),100)}%;background:${mc(avg)}"></div></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+function updateProd(id,field,val){const p=products.find(x=>x.id===id);if(p)p[field]=parseFloat(val)||0;renderProducts();}
+function delProd(id){if(!confirm('Remove this product?'))return;products=products.filter(p=>p.id!==id);renderProducts();}
+
+// ── Margins ───────────────────────────────────────────────────
+function renderMargins(){
+  const totalRev=orders.reduce((s,o)=>s+calc(o).rev,0);
+  const totalCogs=orders.reduce((s,o)=>s+calc(o).cogs,0);
+  const totalProf=orders.reduce((s,o)=>s+calc(o).profit,0);
+  const avgM=totalRev>0?totalProf/totalRev*100:0;
+  const sorted=[...orders].map(o=>({o,c:calc(o)})).sort((a,b)=>b.c.margin-a.c.margin);
+  const el=document.getElementById('tab-margins');
+  el.innerHTML=`
+    <div class="metrics">
+      <div class="mc"><div class="mc-label">Blended margin</div><div class="mc-val" style="color:${mc(avgM)}">${avgM.toFixed(1)}%</div><div class="mc-sub">All orders</div></div>
+      <div class="mc"><div class="mc-label">Total revenue</div><div class="mc-val">₹${fmtL(totalRev)}</div><div class="mc-sub mc-green">Pipeline total</div></div>
+      <div class="mc"><div class="mc-label">Total COGS</div><div class="mc-val">₹${fmtL(totalCogs)}</div><div class="mc-sub mc-amber">Product+branding+extras</div></div>
+      <div class="mc"><div class="mc-label">Gross profit</div><div class="mc-val" style="color:${mc(avgM)}">₹${fmtL(totalProf)}</div><div class="mc-sub ${totalProf>=0?'mc-green':'mc-red'}">${totalProf>=0?'Profitable':'Loss-making'}</div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">All orders sorted by margin</span>
+        <div style="display:flex;gap:10px;font-size:11px;align-items:center">
+          <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3B6D11;margin-right:3px"></span>30%+ healthy</span>
+          <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#854F0B;margin-right:3px"></span>15–30%</span>
+          <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#A32D2D;margin-right:3px"></span>&lt;15% low</span>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr>
+            <th style="width:80px">Order</th><th style="width:115px">Client</th><th style="width:95px">Product</th>
+            <th style="width:42px">Qty</th><th style="width:42px">Disc</th><th style="width:88px">Revenue</th>
+            <th style="width:82px">COGS</th><th style="width:85px">Profit</th><th style="width:68px">Margin</th><th style="width:110px">Bar</th>
+          </tr></thead>
+          <tbody>${sorted.map(({o,c})=>`<tr>
+            <td style="font-size:12px;font-weight:600">${o.id}</td>
+            <td style="font-size:12px">${o.client}</td>
+            <td style="font-size:12px">${gp(o.pid).name}</td>
+            <td style="font-size:12px">${o.qty}</td>
+            <td style="font-size:12px">${o.disc||0}%</td>
+            <td style="font-size:12px">₹${fmt(c.rev)}</td>
+            <td style="font-size:12px;color:var(--text2)">₹${fmt(c.cogs)}</td>
+            <td style="font-size:12px;font-weight:500;color:${mc(c.margin)}">₹${fmt(c.profit)}</td>
+            <td><span class="pill ${mpill(c.margin)}">${Math.round(c.margin)}%</span></td>
+            <td><div class="bar-track" style="width:90px"><div class="bar-fill" style="width:${Math.min(Math.round(Math.max(c.margin,0)),100)}%;background:${mc(c.margin)}"></div></div></td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-head"><span class="card-title">Revenue lost to discounts</span></div>
+        <div style="padding:12px 16px">
+          ${orders.filter(o=>o.disc>0).sort((a,b)=>b.disc-a.disc).map(o=>{
+            const lost=o.qty*gp(o.pid).sell-calc(o).rev;
+            return`<div class="bar-row"><span class="bar-label">${o.client}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(o.disc)}%;background:#E24B4A"></div></div><span class="bar-val" style="color:#A32D2D">-₹${fmt(lost)}</span></div>`;
+          }).join('')}
+          <div style="font-size:12px;color:var(--text2);padding-top:8px;border-top:1px solid var(--border)">Total lost: <strong style="color:#A32D2D">₹${fmt(orders.reduce((s,o)=>s+(o.qty*gp(o.pid).sell-calc(o).rev),0))}</strong></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Extra / overhead costs</span></div>
+        <div style="padding:12px 16px">
+          ${orders.filter(o=>o.extra>0).sort((a,b)=>b.extra-a.extra).map(o=>`
+            <div class="bar-row"><span class="bar-label">${o.client}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.min(Math.round(o.extra/1000),100)}%;background:#EF9F27"></div></div><span class="bar-val" style="color:#854F0B">₹${fmt(o.extra)}</span></div>`).join('')}
+          <div style="font-size:12px;color:var(--text2);padding-top:8px;border-top:1px solid var(--border)">Total extras: <strong style="color:#854F0B">₹${fmt(orders.reduce((s,o)=>s+(o.extra||0),0))}</strong></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ── Employees ─────────────────────────────────────────────────
+function renderEmployees(){
+  const el=document.getElementById('tab-employees');
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px">
+    ${EMPLOYEES.map(emp=>{
+      const active=orders.filter(o=>o.emp===emp.id&&!['client','store'].includes(o.stage)&&!o.done);
+      const done=orders.filter(o=>o.emp===emp.id&&o.done).length;
+      const all=orders.filter(o=>o.emp===emp.id);
+      const totalRev=all.reduce((s,o)=>s+calc(o).rev,0);
+      return`<div class="card" style="padding:0">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:36px;height:36px;border-radius:50%;background:${emp.bg};color:${emp.col};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">${emp.in}</div>
+              <div><div style="font-size:13px;font-weight:500">${emp.name}</div><div style="font-size:11px;color:var(--text2)">${emp.role}</div></div>
+            </div>
+            <button class="btn btn-sm btn-wa" onclick="sendWAToEmployee('${emp.id}')">${WA_ICON} Message</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px">
+            <div style="background:var(--bg3);border-radius:var(--radius);padding:7px;text-align:center"><div style="font-size:10px;color:var(--text2)">Active</div><div style="font-size:16px;font-weight:600">${active.length}</div></div>
+            <div style="background:#EAF3DE;border-radius:var(--radius);padding:7px;text-align:center"><div style="font-size:10px;color:#3B6D11">Done</div><div style="font-size:16px;font-weight:600;color:#27500A">${done}</div></div>
+            <div style="background:var(--bg3);border-radius:var(--radius);padding:7px;text-align:center"><div style="font-size:10px;color:var(--text2)">Value</div><div style="font-size:13px;font-weight:600">₹${fmtL(totalRev)}</div></div>
+          </div>
+        </div>
+        <div style="padding:10px 14px;display:flex;flex-direction:column;gap:4px">
+          ${active.length?active.map(o=>`<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0;border-bottom:1px solid var(--border)">
+            <span style="cursor:pointer;color:var(--text)" onclick="openPanel('${o.id}')">${o.id} — ${o.client.split(' ')[0]}</span>
+            <div style="display:flex;gap:4px;align-items:center">
+              <span class="pill ${spill(o.stage)}" style="font-size:10px">${SL[o.stage].split(' ').pop()}</span>
+              <button class="btn btn-sm btn-wa" style="padding:2px 6px;font-size:10px" onclick="sendWA('${emp.phone}','${encodeURIComponent(buildWAMessage(o,'assign'))}')">${WA_ICON}</button>
+            </div>
+          </div>`).join(''):`<div style="font-size:12px;color:var(--text2)">No active orders</div>`}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function sendWAToEmployee(empId){
+  const emp=ge(empId);
+  const active=orders.filter(o=>o.emp===empId&&!o.done&&!['client','store'].includes(o.stage));
+  if(!active.length){alert('No active tasks to notify about.');return;}
+  const msg=`Hello ${emp.name.split(' ')[0]} 👋\n\nYour active tasks in GiftFlow:\n\n`+active.map(o=>`• ${o.id} — ${o.client} (${SL[o.stage]})\n  Due: ${o.due}`).join('\n\n')+`\n\nView details: ${APP_URL}`;
+  sendWA(emp.phone,msg);
+}
+
+// ── Settings modal ────────────────────────────────────────────
+const AVATAR_COLORS=[
+  {bg:'#EEEDFE',col:'#3C3489'},{bg:'#E1F5EE',col:'#085041'},
+  {bg:'#FAEEDA',col:'#633806'},{bg:'#FAECE7',col:'#712B13'},
+  {bg:'#E6F1FB',col:'#0C447C'},{bg:'#EAF3DE',col:'#27500A'},
+  {bg:'#FBEAF0',col:'#72243E'},{bg:'#F1EFE8',col:'#444441'},
+];
+
+function empInitials(name){
+  const parts=name.trim().split(' ').filter(Boolean);
+  if(parts.length>=2)return(parts[0][0]+parts[1][0]).toUpperCase();
+  return(parts[0]||'?').slice(0,2).toUpperCase();
+}
+
+function openSettings(){
+  renderSettingsModal();
+}
+
+function renderSettingsModal(){
+  const empRows=EMPLOYEES.map((e,idx)=>`
+    <div style="background:var(--bg3);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px" id="emp-row-${e.id}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="width:32px;height:32px;border-radius:50%;background:${e.bg};color:${e.col};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0" id="avatar-${e.id}">${e.in}</div>
+        <span style="font-size:12px;font-weight:500;color:var(--text);flex:1">${e.name}</span>
+        <button class="btn btn-sm btn-danger" style="padding:2px 8px;font-size:11px" onclick="removeEmployee('${e.id}')">Remove</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px">
+        <div>
+          <label style="font-size:10px;color:var(--text2);display:block;margin-bottom:3px;font-weight:500">Full name</label>
+          <input style="width:100%;font-size:12px;padding:5px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:inherit"
+            id="ename-${e.id}" value="${e.name}" oninput="previewAvatar('${e.id}')">
+        </div>
+        <div>
+          <label style="font-size:10px;color:var(--text2);display:block;margin-bottom:3px;font-weight:500">Role / department</label>
+          <input style="width:100%;font-size:12px;padding:5px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:inherit"
+            id="erole-${e.id}" value="${e.role}">
+        </div>
+      </div>
+      <div>
+        <label style="font-size:10px;color:var(--text2);display:block;margin-bottom:3px;font-weight:500">WhatsApp number (with country code)</label>
+        <input style="width:100%;font-size:12px;padding:5px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:inherit"
+          id="ephone-${e.id}" value="${e.phone}" placeholder="919876543210">
+      </div>
+    </div>`).join('');
+
+  showModal(`
+    <div class="modal-header">
+      <div class="modal-title">Settings — team, WhatsApp &amp; app</div>
+      <button class="close-x" onclick="closeModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="settings-card">
+        <div class="settings-card-title">Admin WhatsApp number</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input class="form-input" id="set-admin-phone" value="${ADMIN_PHONE}" placeholder="919999999999" style="width:190px">
+          <span style="font-size:11px;color:var(--text2)">Receives completion &amp; overdue alerts</span>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-card-title">App URL (sent in every WhatsApp message)</div>
+        <input class="form-input" id="set-app-url" value="${APP_URL}" placeholder="https://your-app.netlify.app">
+        <div style="font-size:11px;color:var(--text2);margin-top:4px">After hosting on Netlify, paste the URL here</div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-card-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>Team members</span>
+          <button class="btn btn-sm btn-primary" onclick="addEmployeeRow()">+ Add member</button>
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:10px">Edit name, role and WhatsApp number for each person</div>
+        <div id="emp-rows-container">${empRows}</div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-card-title">How WhatsApp works</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.8">
+          Each button opens WhatsApp with a pre-written message — just tap Send.<br>
+          <strong>Triggers:</strong> New order → notify employee · Stage change → notify next person · Mark done → notify admin · Overdue → bulk alert all late tasks
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSettings()">Save all changes</button>
+    </div>
+  `);
+}
+
+function previewAvatar(empId){
+  const nameEl=document.getElementById('ename-'+empId);
+  const avatar=document.getElementById('avatar-'+empId);
+  if(!nameEl||!avatar)return;
+  avatar.textContent=empInitials(nameEl.value||'?');
+}
+
+function addEmployeeRow(){
+  const newId='e'+Date.now();
+  const colorIdx=EMPLOYEES.length%AVATAR_COLORS.length;
+  const color=AVATAR_COLORS[colorIdx];
+  const newEmp={id:newId,name:'New Employee',role:'Role',in:'NE',bg:color.bg,col:color.col,phone:''};
+  EMPLOYEES.push(newEmp);
+  const container=document.getElementById('emp-rows-container');
+  if(!container)return;
+  const div=document.createElement('div');
+  div.innerHTML=`
+    <div style="background:var(--bg3);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px" id="emp-row-${newId}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="width:32px;height:32px;border-radius:50%;background:${color.bg};color:${color.col};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0" id="avatar-${newId}">NE</div>
+        <span style="font-size:12px;font-weight:500;color:var(--text);flex:1">New Employee</span>
+        <button class="btn btn-sm btn-danger" style="padding:2px 8px;font-size:11px" onclick="removeEmployee('${newId}')">Remove</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px">
+        <div>
+          <label style="font-size:10px;color:var(--text2);display:block;margin-bottom:3px;font-weight:500">Full name</label>
+          <input style="width:100%;font-size:12px;padding:5px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:inherit"
+            id="ename-${newId}" value="New Employee" oninput="previewAvatar('${newId}')">
+        </div>
+        <div>
+          <label style="font-size:10px;color:var(--text2);display:block;margin-bottom:3px;font-weight:500">Role / department</label>
+          <input style="width:100%;font-size:12px;padding:5px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:inherit"
+            id="erole-${newId}" value="Role">
+        </div>
+      </div>
+      <div>
+        <label style="font-size:10px;color:var(--text2);display:block;margin-bottom:3px;font-weight:500">WhatsApp number (with country code)</label>
+        <input style="width:100%;font-size:12px;padding:5px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:inherit"
+          id="ephone-${newId}" value="" placeholder="919876543210">
+      </div>
+    </div>`;
+  container.appendChild(div.firstElementChild);
+}
+
+function removeEmployee(empId){
+  if(EMPLOYEES.length<=1){alert('You need at least one team member.');return;}
+  if(!confirm('Remove this team member?'))return;
+  EMPLOYEES=EMPLOYEES.filter(e=>e.id!==empId);
+  const row=document.getElementById('emp-row-'+empId);
+  if(row)row.remove();
+}
+
+function saveSettings(){
+  ADMIN_PHONE=document.getElementById('set-admin-phone').value.replace(/\D/g,'');
+  APP_URL=document.getElementById('set-app-url').value.trim();
+  EMPLOYEES.forEach(e=>{
+    const nameEl=document.getElementById('ename-'+e.id);
+    const roleEl=document.getElementById('erole-'+e.id);
+    const phoneEl=document.getElementById('ephone-'+e.id);
+    if(nameEl){
+      e.name=nameEl.value.trim()||e.name;
+      e.in=empInitials(e.name);
+    }
+    if(roleEl)e.role=roleEl.value.trim()||e.role;
+    if(phoneEl)e.phone=phoneEl.value.replace(/\D/g,'');
+  });
+  closeModal();
+  render(curTab);
+}
+
+// ── New Order Modal ───────────────────────────────────────────
+function openOrderModal(){
+  const prodOpts=products.map(p=>`<option value="${p.id}">${p.name} — ₹${p.sell}/unit</option>`).join('');
+  const empOpts=EMPLOYEES.map(e=>`<option value="${e.id}">${e.name} — ${e.role}</option>`).join('');
+  window._newImgs=[];
+  showModal(`
+    <div class="modal-header"><div class="modal-title">New order</div><button class="close-x" onclick="closeModal()">&#x2715;</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div><label class="form-label">Client name</label><input class="form-input" id="no-client" placeholder="Acme Corp"></div>
+        <div><label class="form-label">Product</label><select class="form-input" id="no-prod" onchange="recalcModal('no')">${prodOpts}</select></div>
+      </div>
+      <div class="form-row3">
+        <div><label class="form-label">Quantity</label><input class="form-input" type="number" id="no-qty" value="100" oninput="recalcModal('no')"></div>
+        <div><label class="form-label">Discount %</label><input class="form-input" type="number" id="no-disc" value="0" oninput="recalcModal('no')"></div>
+        <div><label class="form-label">Extra costs ₹</label><input class="form-input" type="number" id="no-extra" value="0" oninput="recalcModal('no')"></div>
+      </div>
+      <div class="form-row">
+        <div><label class="form-label">Priority</label><select class="form-input" id="no-pri"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select></div>
+        <div><label class="form-label">Assign to</label><select class="form-input" id="no-emp">${empOpts}</select></div>
+      </div>
+      <div class="form-row">
+        <div><label class="form-label">Due date</label><input class="form-input" type="date" id="no-due"></div>
+        <div><label class="form-label">Notes</label><input class="form-input" id="no-notes" placeholder="Branding instructions..."></div>
+      </div>
+      <div>
+        <label class="form-label">Logo / branding images</label>
+        <div class="logo-zone">
+          <input type="file" accept="image/*" multiple onchange="handleNewImg(event)">
+          <div style="pointer-events:none">
+            <svg width="18" height="18" fill="none" stroke="var(--text2)" stroke-width="1.5" viewBox="0 0 24 24" style="display:block;margin:0 auto 5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div style="font-size:12px;color:var(--text2)">Upload logo or reference image</div>
+          </div>
+        </div>
+        <div class="img-grid" id="new-img-grid" style="margin-top:8px"></div>
+      </div>
+      <div class="pnl-preview"><div style="font-size:10px;font-weight:600;color:var(--text2);letter-spacing:0.05em;margin-bottom:8px">P&amp;L PREVIEW</div><div class="pnl-grid" id="no-pnl"></div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNewOrder()">Create &amp; notify employee</button>
+    </div>
+  `);
+  const td=new Date();td.setDate(td.getDate()+7);
+  const dd=document.getElementById('no-due');if(dd)dd.value=td.toISOString().split('T')[0];
+  recalcModal('no');
+}
+
+function handleNewImg(evt){
+  Array.from(evt.target.files).forEach(file=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      window._newImgs.push(e.target.result);
+      const g=document.getElementById('new-img-grid');
+      if(g)g.innerHTML=window._newImgs.map((s,i)=>`<div class="img-wrap"><img src="${s}"><button class="img-del" onclick="window._newImgs.splice(${i},1);this.parentNode.parentNode.innerHTML=window._newImgs.map((s2,j)=>'<div class=\\'img-wrap\\'><img src=\\''+s2+'\\'>'+\`<button class=\\'img-del\\' onclick=\\'window._newImgs.splice(\${j},1)\\'>&#x2715;</button></div>\`).join('')">&#x2715;</button></div>`).join('');
+    };
+    r.readAsDataURL(file);
+  });
+  evt.target.value='';
+}
+
+function recalcModal(prefix){
+  const pid=document.getElementById(prefix+'-prod')?.value;
+  const qty=parseFloat(document.getElementById(prefix+'-qty')?.value)||0;
+  const disc=parseFloat(document.getElementById(prefix+'-disc')?.value)||0;
+  const extra=parseFloat(document.getElementById(prefix+'-extra')?.value)||0;
+  const p=gp(pid);
+  const rev=qty*p.sell*(1-disc/100);const cogs=qty*(p.cost+p.brand)+extra;
+  const profit=rev-cogs;const margin=rev>0?profit/rev*100:0;
+  const pnl=document.getElementById(prefix+'-pnl');if(!pnl)return;
+  pnl.innerHTML=`
+    <div><div class="pnl-item-label">Revenue</div><div class="pnl-item-val" style="color:var(--text)">₹${fmt(rev)}</div></div>
+    <div><div class="pnl-item-label">COGS</div><div class="pnl-item-val" style="color:var(--text2)">₹${fmt(cogs)}</div></div>
+    <div><div class="pnl-item-label">Gross profit</div><div class="pnl-item-val" style="color:${mc(margin)}">₹${fmt(profit)}<br><span style="font-size:12px">${Math.round(margin)}%</span></div></div>
+  `;
+}
+
+function saveNewOrder(){
+  const client=document.getElementById('no-client')?.value.trim();
+  if(!client){alert('Client name is required.');return;}
+  const empId=document.getElementById('no-emp').value;
+  const id=nextId();
+  const newOrder={
+    id,client,
+    pid:document.getElementById('no-prod').value,
+    qty:parseFloat(document.getElementById('no-qty').value)||0,
+    stage:'received',pri:document.getElementById('no-pri').value,
+    emp:empId,due:document.getElementById('no-due').value,
+    notes:document.getElementById('no-notes')?.value||'',
+    date:nowStr(),imgs:window._newImgs||[],
+    disc:parseFloat(document.getElementById('no-disc').value)||0,
+    extra:parseFloat(document.getElementById('no-extra').value)||0,
+    done:false,
+    hist:[{dot:'#534AB7',act:'Order created',who:ge(empId).name,d:nowStr()}],
+  };
+  orders.push(newOrder);
+  closeModal();
+  render(curTab);
+  // Auto open WA to notify assigned employee
+  const emp=ge(empId);
+  if(emp.phone){sendWA(emp.phone,buildWAMessage(newOrder,'assign'));}
+}
+
+// ── New Product Modal ─────────────────────────────────────────
+function openProductModal(){
+  showModal(`
+    <div class="modal-header"><div class="modal-title">Add product</div><button class="close-x" onclick="closeModal()">&#x2715;</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div><label class="form-label">Product name</label><input class="form-input" id="np-name" placeholder="Ceramic mug"></div>
+        <div><label class="form-label">Category</label><select class="form-input" id="np-cat"><option>Stationery</option><option>Drinkware</option><option>Bags</option><option>Apparel</option><option>Tech</option><option>Other</option></select></div>
+      </div>
+      <div class="form-row3">
+        <div><label class="form-label">Cost price ₹</label><input class="form-input" type="number" id="np-cost" value="100" oninput="recalcProdModal()"></div>
+        <div><label class="form-label">Branding cost ₹</label><input class="form-input" type="number" id="np-brand" value="30" oninput="recalcProdModal()"></div>
+        <div><label class="form-label">Selling price ₹</label><input class="form-input" type="number" id="np-sell" value="250" oninput="recalcProdModal()"></div>
+      </div>
+      <div><label class="form-label">Min order qty</label><input class="form-input" type="number" id="np-min" value="50" style="width:120px"></div>
+      <div class="pnl-preview"><div style="font-size:10px;font-weight:600;color:var(--text2);letter-spacing:0.05em;margin-bottom:8px">MARGIN PREVIEW (per unit)</div><div class="pnl-grid" id="np-pnl"></div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNewProd()">Add product</button>
+    </div>
+  `);recalcProdModal();
+}
+function recalcProdModal(){
+  const cost=parseFloat(document.getElementById('np-cost')?.value)||0;
+  const brand=parseFloat(document.getElementById('np-brand')?.value)||0;
+  const sell=parseFloat(document.getElementById('np-sell')?.value)||0;
+  const profit=sell-cost-brand;const margin=sell>0?profit/sell*100:0;
+  const pnl=document.getElementById('np-pnl');if(!pnl)return;
+  pnl.innerHTML=`
+    <div><div class="pnl-item-label">Total cost</div><div class="pnl-item-val" style="color:var(--text)">₹${fmt(cost+brand)}</div></div>
+    <div><div class="pnl-item-label">Unit profit</div><div class="pnl-item-val" style="color:${mc(margin)}">₹${fmt(profit)}</div></div>
+    <div><div class="pnl-item-label">Margin</div><div class="pnl-item-val" style="color:${mc(margin)}">${Math.round(margin)}%</div></div>
+  `;
+}
+function saveNewProd(){
+  const name=document.getElementById('np-name')?.value.trim();
+  if(!name){alert('Product name required.');return;}
+  products.push({id:'p'+Date.now(),name,cat:document.getElementById('np-cat').value,cost:parseFloat(document.getElementById('np-cost').value)||0,brand:parseFloat(document.getElementById('np-brand').value)||0,sell:parseFloat(document.getElementById('np-sell').value)||0,minQty:parseInt(document.getElementById('np-min').value)||1});
+  closeModal();render(curTab);
+}
+
+// ── Modal helpers ─────────────────────────────────────────────
+function showModal(html){
+  document.getElementById('modal-root').innerHTML=`<div class="modal-overlay" id="modal-bg" onclick="closeModal(event)"><div class="modal" onclick="event.stopPropagation()">${html}</div></div>`;
+}
+function closeModal(e){
+  if(e&&e.target.id!=='modal-bg')return;
+  document.getElementById('modal-root').innerHTML='';
+}
+
+// ── Init ──────────────────────────────────────────────────────
+renderPipeline();
+</script>
+</body>
+</html>
